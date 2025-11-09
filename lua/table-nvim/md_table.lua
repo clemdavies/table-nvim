@@ -23,6 +23,7 @@ local api, ts, fn = vim.api, vim.treesitter, vim.fn
 ---@field cols MdTableColInfo[] Information about all columns in the table.
 ---@field root TSNode The root node of the table.
 ---@field pipes boolean Whether the table is surrounded by pipes.
+---@field indent_text string[] Indent text for each row.
 local MdTable = {}
 
 ---@param root TSNode The root node of a table.
@@ -35,24 +36,30 @@ function MdTable:new(root)
 
   local start = root:start();
   local end_ = root:end_();
-  local indent
+  local indent = 0
   local cols = {}
   local rows = {}
   local cursor_col_index = nil
   local cursor_row_index = nil
   local pipes = false
+  local indent_text = {}
 
-  for r, row in utils.iter_named_children(root) do
+  for _, row in utils.iter_named_children(root) do
+    if not utils.is_tbl_row(row) then goto continue end
+
+    local r = #rows + 1
+
     rows[r] = {}
 
-    if r == 1 then
-      local col = row:child(0)
+    local _, i = row:start()
+    indent = math.max(i, indent)
 
-      if col then
-        _, indent = col:start()
-        if col:type() == '|' then pipes = true end
-      end
-    end
+    if r == 1 and row:child(0):type() == '|' then pipes = true end
+
+    -- Preserve indent text
+    local y, x = row:start()
+    local t = api.nvim_buf_get_text(0, y, 0, y, x, {})
+    indent_text[r] = table.concat(t)
 
     for c, col in utils.iter_named_children(row) do
       cols[c] = cols[c] or {}
@@ -85,6 +92,7 @@ function MdTable:new(root)
 
       rows[r][c] = { type = type, text = text }
     end
+    ::continue::
   end
 
   ---@type MdTable
@@ -98,6 +106,7 @@ function MdTable:new(root)
     cursor_row = cursor_row_index or #rows,
     root = root,
     pipes = pipes,
+    indent_text = indent_text,
   }
 
   ---@diagnostic disable-next-line: inject-field
@@ -122,8 +131,11 @@ function MdTable:generate_row(index)
   local padd = conf.get_config().padd_column_separators
   local line = {}
   local row = self.rows[index]
+  local indent_text = self.indent_text[index]
 
-  table.insert(line, string.rep(' ', self.indent))
+  table.insert(line, indent_text)
+
+  table.insert(line, string.rep(' ', self.indent - #indent_text))
 
   if self.pipes then
     local del = padd and '| ' or '|'

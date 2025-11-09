@@ -69,8 +69,6 @@ local move_column = function(left)
   if left and second < 1 then return end
   if not left and second > #t.cols then return end
 
-  vim.print(t.cursor_row, t.cursor_col)
-
   t:swap_columns(first, second)
   t:render()
   t:move_cursor_to(t.cursor_row, second)

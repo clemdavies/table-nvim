@@ -1,8 +1,15 @@
 local tbl_node = 'pipe_table'
+
 local tbl_cell = 'pipe_table_cell'
 local tbl_delimiter_cell = 'pipe_table_delimiter_cell'
+
+local tbl_header = 'pipe_table_header'
+local tbl_delimiter_row = 'pipe_table_delimiter_row'
+local tbl_row = 'pipe_table_row'
+
 local tbl_align_left = 'pipe_table_align_left'
 local tbl_align_right = 'pipe_table_align_right'
+
 local tbl_node_len = #tbl_node
 
 local conf = require('table-nvim.config')
@@ -38,6 +45,12 @@ end
 local is_tbl_cell = function(node)
   local type = node:type()
   return type == tbl_cell or type == tbl_delimiter_cell
+end
+
+---Returns `true` if the provided node is a table row, and `false` otherwise.
+local is_tbl_row = function(node)
+  local type = node:type()
+  return type == tbl_header or type == tbl_delimiter_row or type == tbl_row
 end
 
 ---Returns `true` if the provided node is an alignment node, and `false` otherwise.
@@ -111,6 +124,7 @@ return {
   is_tbl_root = is_tbl_root,
   is_tbl_node = is_tbl_node,
   is_tbl_cell = is_tbl_cell,
+  is_tbl_row = is_tbl_row,
   is_tbl_align = is_tbl_align,
   gen_table = gen_table,
   gen_table_alt = gen_table_alt,
