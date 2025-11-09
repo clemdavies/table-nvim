@@ -119,6 +119,18 @@ local iter_named_children = function(node)
   end
 end
 
+--- Get next or previous sibling of a table node
+---@param node TSNode
+---@return TSNode?
+local tbl_named_sibling = function(node, next)
+  while true do
+    ---@diagnostic disable-next-line: cast-local-type
+    node = next and node:next_named_sibling() or node:prev_named_sibling()
+    if not node then return end
+    if is_tbl_node(node) then return node end
+  end
+end
+
 return {
   get_tbl_root = get_tbl_root,
   is_tbl_root = is_tbl_root,
@@ -130,4 +142,5 @@ return {
   gen_table_alt = gen_table_alt,
   iter_children = iter_children,
   iter_named_children = iter_named_children,
+  tbl_named_sibling = tbl_named_sibling,
 }

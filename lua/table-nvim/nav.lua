@@ -50,7 +50,7 @@ local get_node = function(node, row, col, next)
       local parent_row = node:parent()
       if not parent_row then return node end
 
-      local next_row = next and parent_row:next_named_sibling() or parent_row:prev_named_sibling()
+      local next_row = utils.tbl_named_sibling(parent_row, next)
       if not next_row then return node end
 
       local col_count = next_row:named_child_count()
