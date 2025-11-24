@@ -291,6 +291,7 @@ function MdTable:insert_row_at(index)
   row[col_count] = cell_x
 
   table.insert(self.rows, index, row)
+  table.insert(self.indent_text, index, self.indent_text[index] or self.indent_text[index - 1])
 
   return index
 end
